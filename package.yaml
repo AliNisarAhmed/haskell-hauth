@@ -28,7 +28,6 @@ dependencies:
 - regex-pcre-builtin
 - aeson
 - template-haskell
-- safe-exceptions
 
 default-extensions:
 - NoImplicitPrelude

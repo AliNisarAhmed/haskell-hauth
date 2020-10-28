@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 927a2f2a696c33ab4b38308637f0d011a6a19decf0379afa94d671c406700ece
+-- hash: bf9bb46b3782e0be0c62ff50dda7bc446279400640619750faa1dd2c4ad1ec4a
 
 name:           hauth
 version:        0.1.0.0
@@ -39,7 +39,6 @@ library
     , classy-prelude
     , raw-strings-qq
     , regex-pcre-builtin
-    , safe-exceptions
     , template-haskell
     , time
     , time-lens
@@ -60,7 +59,6 @@ executable hauth-exe
     , hauth
     , raw-strings-qq
     , regex-pcre-builtin
-    , safe-exceptions
     , template-haskell
     , time
     , time-lens
@@ -82,7 +80,6 @@ test-suite hauth-test
     , hauth
     , raw-strings-qq
     , regex-pcre-builtin
-    , safe-exceptions
     , template-haskell
     , time
     , time-lens
