@@ -3,6 +3,7 @@ module Lib where
 import ClassyPrelude
 import Data.Aeson
 import Data.Aeson.TH
+import Domain.Validation
 import Language.Haskell.TH.Syntax (nameBase)
 
 someFunc :: IO ()

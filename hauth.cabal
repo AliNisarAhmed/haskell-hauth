@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bf9bb46b3782e0be0c62ff50dda7bc446279400640619750faa1dd2c4ad1ec4a
+-- hash: f9517af883cd7c74c8a19356202a72a370169647d4b0b2e81c1b0fdb022a1af5
 
 name:           hauth
 version:        0.1.0.0
@@ -27,18 +27,24 @@ source-repository head
 
 library
   exposed-modules:
+      Adapter.InMemory.Auth
+      Domain.Auth
+      Domain.Validation
       Lib
   other-modules:
       Paths_hauth
   hs-source-dirs:
       src
-  default-extensions: NoImplicitPrelude OverloadedStrings QuasiQuotes TemplateHaskell
+  default-extensions: NoImplicitPrelude OverloadedStrings QuasiQuotes TemplateHaskell ConstraintKinds FlexibleContexts
   build-depends:
       aeson
     , base >=4.7 && <5
     , classy-prelude
+    , data-has
+    , mtl
     , raw-strings-qq
     , regex-pcre-builtin
+    , string-random
     , template-haskell
     , time
     , time-lens
@@ -50,15 +56,18 @@ executable hauth-exe
       Paths_hauth
   hs-source-dirs:
       app
-  default-extensions: NoImplicitPrelude OverloadedStrings QuasiQuotes TemplateHaskell
+  default-extensions: NoImplicitPrelude OverloadedStrings QuasiQuotes TemplateHaskell ConstraintKinds FlexibleContexts
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
     , classy-prelude
+    , data-has
     , hauth
+    , mtl
     , raw-strings-qq
     , regex-pcre-builtin
+    , string-random
     , template-haskell
     , time
     , time-lens
@@ -71,15 +80,18 @@ test-suite hauth-test
       Paths_hauth
   hs-source-dirs:
       test
-  default-extensions: NoImplicitPrelude OverloadedStrings QuasiQuotes TemplateHaskell
+  default-extensions: NoImplicitPrelude OverloadedStrings QuasiQuotes TemplateHaskell ConstraintKinds FlexibleContexts
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
     , classy-prelude
+    , data-has
     , hauth
+    , mtl
     , raw-strings-qq
     , regex-pcre-builtin
+    , string-random
     , template-haskell
     , time
     , time-lens

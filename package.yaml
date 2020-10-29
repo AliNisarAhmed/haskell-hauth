@@ -28,12 +28,17 @@ dependencies:
 - regex-pcre-builtin
 - aeson
 - template-haskell
+- mtl
+- data-has
+- string-random
 
 default-extensions:
 - NoImplicitPrelude
 - OverloadedStrings
 - QuasiQuotes
 - TemplateHaskell
+- ConstraintKinds
+- FlexibleContexts
 
 library:
   source-dirs: src

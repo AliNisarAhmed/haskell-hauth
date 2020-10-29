@@ -65,8 +65,8 @@ packages:
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
-# extra-deps:
-# - regex-posix-clib-2.7
+extra-deps:
+- string-random-0.1.3.0@sha256:0de5969191f326616f002f64031ffbad31a9b5d71f9d17e16a005379e0a137f9,2439
 
 # flags:
 #    regex-posix:
