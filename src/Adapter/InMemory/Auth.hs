@@ -1,6 +1,7 @@
 module Adapter.InMemory.Auth where
 
 import ClassyPrelude
+import Control.Monad.Except (runExceptT, throwError)
 import Data.Has (Has (getter))
 import qualified Domain.Auth as D
 import Text.StringRandom
@@ -29,13 +30,63 @@ initialState =
 type InMemory r m = (Has (TVar State) r, MonadReader r m, MonadIO m)
 
 addAuth :: InMemory r m => D.Auth -> m (Either D.RegistrationError D.VerificationCode)
-addAuth = undefined
+addAuth auth = do
+  tvar <- asks getter
+  -- generate verification code
+  vCode <- liftIO $ stringRandomIO "[A-Za-z0-9]{16}"
+  atomically . runExceptT $ do
+    state <- lift $ readTVar tvar
+    -- check whether the given email is duplicate
+    let auths = stateAuths state
+        email = D.authEmail auth
+        isDuplicate = any (email ==) . map (D.authEmail . snd) $ auths
+    when isDuplicate $ throwError D.RegistrationErrorEmailTaken
+    -- otherwise, update the state with new Email
+    let newUserId = stateUserIdCounter state + 1
+        newAuths = (newUserId, auth) : auths
+        unVerifiedEmails = stateUnverifiedEmails state
+        newUnverifiedEmails = insertMap vCode email unVerifiedEmails
+        newState =
+          state
+            { stateAuths = newAuths,
+              stateUserIdCounter = newUserId,
+              stateUnverifiedEmails = newUnverifiedEmails
+            }
+    lift $ writeTVar tvar newState
+    return vCode
 
 setEmailAsVerified :: InMemory r m => D.VerificationCode -> m (Either D.EmailVerificationError ())
-setEmailAsVerified = undefined
+setEmailAsVerified vCode = do
+  tvar <- asks getter
+  atomically . runExceptT $ do
+    state <- lift $ readTVar tvar
+    let unverifiedEmails = stateUnverifiedEmails state
+        verifiedEmails = stateVerifiedEmails state
+        mayEmail = lookup vCode unverifiedEmails
+    case mayEmail of
+      Nothing -> throwError D.EmailVerificationErrorInvalidCode
+      Just email -> do
+        let newUnverifiedEmails = deleteMap vCode unverifiedEmails
+            newVerifiedEmails = insertSet email verifiedEmails
+            newState =
+              state
+                { stateUnverifiedEmails = newUnverifiedEmails,
+                  stateVerifiedEmails = newVerifiedEmails
+                }
+        lift $ writeTVar tvar newState
 
 findUserByAuth :: InMemory r m => D.Auth -> m (Maybe (D.UserId, Bool))
-findUserByAuth = undefined
+findUserByAuth auth = do
+  tvar <- asks getter
+  state <- liftIO $ readTVarIO tvar
+  let mayUserId = map fst . find ((auth ==) . snd) $ stateAuths state
+  case mayUserId of
+    Nothing -> return Nothing
+    Just uId -> do
+      let verifiedEmails = stateVerifiedEmails state
+          email = D.authEmail auth
+          isVerified = elem email verifiedEmails
+      return $ Just (uId, isVerified)
 
 findEmailFromUserId :: InMemory r m => D.UserId -> m (Maybe D.Email)
 findEmailFromUserId userId = do

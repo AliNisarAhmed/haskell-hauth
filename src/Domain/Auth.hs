@@ -86,14 +86,14 @@ class Monad m => AuthRepo m where
 class Monad m => EmailVerificationNotif m where
   notifyEmailVerification :: Email -> VerificationCode -> m ()
 
-instance AuthRepo IO where
-  addAuth (Auth email pass) = do
-    putStrLn $ "Adding auth: " <> rawEmail email
-    return $ Right "fake verification code"
+-- instance AuthRepo IO where
+--   addAuth (Auth email pass) = do
+--     putStrLn $ "Adding auth: " <> rawEmail email
+--     return $ Right "fake verification code"
 
-instance EmailVerificationNotif IO where
-  notifyEmailVerification email vcode =
-    putStrLn $ "Notify " <> rawEmail email <> " - " <> vcode
+-- instance EmailVerificationNotif IO where
+--   notifyEmailVerification email vcode =
+--     putStrLn $ "Notify " <> rawEmail email <> " - " <> vcode
 
 register ::
   (AuthRepo m, EmailVerificationNotif m) =>
