@@ -1,7 +1,7 @@
 module Adapter.InMemory.Auth where
 
 import ClassyPrelude
-import Control.Monad.Except (runExceptT, throwError)
+import Control.Monad.Except (MonadError, runExceptT, throwError)
 import Data.Has (Has (getter))
 import qualified Domain.Auth as D
 import Text.StringRandom
@@ -29,7 +29,7 @@ initialState =
 
 type InMemory r m = (Has (TVar State) r, MonadReader r m, MonadIO m)
 
-addAuth :: InMemory r m => D.Auth -> m (Either D.RegistrationError D.VerificationCode)
+addAuth :: InMemory r m => D.Auth -> m (Either D.RegistrationError (D.UserId, D.VerificationCode))
 addAuth auth = do
   tvar <- asks getter
   -- generate verification code
@@ -53,9 +53,9 @@ addAuth auth = do
               stateUnverifiedEmails = newUnverifiedEmails
             }
     lift $ writeTVar tvar newState
-    return vCode
+    return (newUserId, vCode)
 
-setEmailAsVerified :: InMemory r m => D.VerificationCode -> m (Either D.EmailVerificationError ())
+setEmailAsVerified :: InMemory r m => D.VerificationCode -> m (Either D.EmailVerificationError (D.UserId, D.Email))
 setEmailAsVerified vCode = do
   tvar <- asks getter
   atomically . runExceptT $ do
@@ -63,17 +63,23 @@ setEmailAsVerified vCode = do
     let unverifiedEmails = stateUnverifiedEmails state
         verifiedEmails = stateVerifiedEmails state
         mayEmail = lookup vCode unverifiedEmails
-    case mayEmail of
-      Nothing -> throwError D.EmailVerificationErrorInvalidCode
-      Just email -> do
-        let newUnverifiedEmails = deleteMap vCode unverifiedEmails
-            newVerifiedEmails = insertSet email verifiedEmails
-            newState =
-              state
-                { stateUnverifiedEmails = newUnverifiedEmails,
-                  stateVerifiedEmails = newVerifiedEmails
-                }
-        lift $ writeTVar tvar newState
+    email <- mayEmail `orThrow` D.EmailVerificationErrorInvalidCode
+    let auths = stateAuths state
+        mayUserId = map fst . find ((email ==) . D.authEmail . snd) $ auths
+    uId <- mayUserId `orThrow` D.EmailVerificationErrorInvalidCode
+    let newVerifiedEmails = insertSet email verifiedEmails
+        newUnVerifiedEmails = deleteMap vCode unverifiedEmails
+        newState =
+          state
+            { stateUnverifiedEmails = newUnVerifiedEmails,
+              stateVerifiedEmails = newVerifiedEmails
+            }
+    lift $ writeTVar tvar newState
+    return (uId, email)
+
+orThrow :: MonadError e m => Maybe a -> e -> m a
+orThrow Nothing e = throwError e
+orThrow (Just a) _ = return a
 
 findUserByAuth :: InMemory r m => D.Auth -> m (Maybe (D.UserId, Bool))
 findUserByAuth auth = do

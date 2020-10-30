@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2276f8d7672d53e414070a9ca4e774af889d68762eea7cf45b1a621d3390286b
+-- hash: 16457585485b075d741d7cecd76789c5bd3acf2a355693221fedcf55421992d2
 
 name:           hauth
 version:        0.1.0.0
@@ -41,6 +41,7 @@ library
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , katip
     , mtl
     , raw-strings-qq
     , regex-pcre-builtin
@@ -64,6 +65,7 @@ executable hauth-exe
     , classy-prelude
     , data-has
     , hauth
+    , katip
     , mtl
     , raw-strings-qq
     , regex-pcre-builtin
@@ -88,6 +90,7 @@ test-suite hauth-test
     , classy-prelude
     , data-has
     , hauth
+    , katip
     , mtl
     , raw-strings-qq
     , regex-pcre-builtin
