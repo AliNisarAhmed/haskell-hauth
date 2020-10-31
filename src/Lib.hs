@@ -1,8 +1,10 @@
 module Lib where
 
 import qualified Adapter.InMemory.Auth as M
+import qualified Adapter.PostgreSQL.Auth as PG
 import ClassyPrelude
 import Control.Monad (MonadFail)
+import Control.Monad.Catch (MonadThrow)
 import Data.Aeson
 import Data.Aeson.TH
 import Domain.Auth
@@ -12,8 +14,16 @@ import Language.Haskell.TH.Syntax (nameBase)
 
 someFunc :: IO ()
 someFunc = withKatip $ \le -> do
-  state <- newTVarIO M.initialState
-  run le state action
+  mState <- newTVarIO M.initialState
+  PG.withState pgCfg $ \pgState -> run le (pgState, mState) action
+  where
+    pgCfg =
+      PG.Config
+        { PG.configUrl = "postgresql://localhost/hauth",
+          PG.configStripeCount = 2,
+          PG.configMaxOpenConnPerStripe = 5,
+          PG.configIdleConnTimeout = 10
+        }
 
 action :: App ()
 action = do
@@ -30,20 +40,20 @@ action = do
 
 ---- Application ----
 
-type State = TVar M.State
+type State = (PG.State, TVar M.State)
 
 newtype App a = App
   {unApp :: ReaderT State (KatipContextT IO) a}
-  deriving (Applicative, Functor, Monad, MonadReader State, MonadIO, MonadFail, KatipContext, Katip)
+  deriving (Applicative, Functor, Monad, MonadReader State, MonadIO, MonadFail, KatipContext, Katip, MonadThrow)
 
 run :: LogEnv -> State -> App a -> IO a
 run le state = runKatipContextT le () mempty . flip runReaderT state . unApp
 
 instance AuthRepo App where
-  addAuth = M.addAuth
-  setEmailAsVerified = M.setEmailAsVerified
-  findUserByAuth = M.findUserByAuth
-  findEmailFromUserId = M.findEmailFromUserId
+  addAuth = PG.addAuth
+  setEmailAsVerified = PG.setEmailAsVerified
+  findUserByAuth = PG.findUserByAuth
+  findEmailFromUserId = PG.findEmailFromUserId
 
 instance EmailVerificationNotif App where
   notifyEmailVerification = M.notifyEmailVerification

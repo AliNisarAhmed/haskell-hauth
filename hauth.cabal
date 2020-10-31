@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 16457585485b075d741d7cecd76789c5bd3acf2a355693221fedcf55421992d2
+-- hash: 8d2d5c5d95e1f08868a45a0d7f7e922cb49a3d770fe8212af65c06bd5aa90f2d
 
 name:           hauth
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Adapter.InMemory.Auth
+      Adapter.PostgreSQL.Auth
       Domain.Auth
       Domain.Validation
       Lib
@@ -41,10 +42,14 @@ library
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , exceptions
     , katip
     , mtl
+    , postgresql-simple
+    , postgresql-simple-migration
     , raw-strings-qq
     , regex-pcre-builtin
+    , resource-pool
     , string-random
     , template-haskell
     , time
@@ -64,11 +69,15 @@ executable hauth-exe
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , exceptions
     , hauth
     , katip
     , mtl
+    , postgresql-simple
+    , postgresql-simple-migration
     , raw-strings-qq
     , regex-pcre-builtin
+    , resource-pool
     , string-random
     , template-haskell
     , time
@@ -89,11 +98,15 @@ test-suite hauth-test
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , exceptions
     , hauth
     , katip
     , mtl
+    , postgresql-simple
+    , postgresql-simple-migration
     , raw-strings-qq
     , regex-pcre-builtin
+    , resource-pool
     , string-random
     , template-haskell
     , time
